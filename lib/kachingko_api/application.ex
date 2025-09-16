@@ -17,8 +17,8 @@ defmodule KachingkoApi.Application do
       # Start to serve requests, typically the last entry
       KachingkoApiWeb.Endpoint,
       {Guardian.DB.Sweeper, []},
-      {KachingkoApi.Statements.PdfExtractor, []},
-      KachingkoApi.Vault
+      {KachingkoApi.Statements.PdfExtractor, []}
+      # KachingkoApi.Vault
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
