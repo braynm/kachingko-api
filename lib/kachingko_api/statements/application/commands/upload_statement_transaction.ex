@@ -18,7 +18,7 @@ defmodule KachingkoApi.Statements.Application.Commands.UploadStatementTransactio
     use Ecto.Schema
     import Ecto.Changeset
 
-    @supported_banks ["rcbc", "eastwest"]
+    @supported_banks  Application.get_env(:kachingko_api, :supported_banks)
     @derive {Jason.Encoder, only: [:card_id, :user_id, :bank, :pdf_pw, :file]}
 
     @allowed_extensions Application.compile_env(

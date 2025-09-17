@@ -39,3 +39,8 @@ config :guardian, Guardian.DB,
   sweep_interval: 60
 
 config :kachingko_api, KachingkoApi.Vault, []
+
+config :kachingko_api, :supported_banks, [
+  "eastwest",
+  "rcbc"
+]
