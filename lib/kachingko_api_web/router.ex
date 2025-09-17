@@ -18,6 +18,49 @@ defmodule KachingkoApiWeb.Router do
     pipe_through :browser
   end
 
+  pipeline :guardian_auth do
+    plug Guardian.Plug.Pipeline,
+      module: KachingkoApiWeb.Guardian,
+      error_handler: KachingkoApiWeb.AuthErrorHandler
+
+    plug Guardian.Plug.VerifyHeader, realm: "Bearer"
+    plug Guardian.Plug.EnsureAuthenticated
+    plug Guardian.Plug.LoadResource
+  end
+
+  pipeline :guardian_validate_session do
+    plug KachingkoApiWeb.Plugs.ValidateGuardianSession
+  end
+
+  scope "/api", KachingkoApiWeb do
+    pipe_through :api
+
+    post "/auth/register", AuthController, :register
+    post "/auth/login", AuthController, :login
+  end
+
+  scope "/api", KachingkoApiWeb do
+    pipe_through [:api, :guardian_auth]
+
+    get "/auth/me", AuthController, :me
+  end
+
+  scope "/api", KachingkoApiWeb do
+    pipe_through [:api, :guardian_auth, :guardian_validate_session]
+
+    get "/auth/test", AuthController, :test
+    get "/auth/logout", AuthController, :logout
+
+    get "/statements/cards", StatementsController, :get_cards
+    post "/statements/new-card", StatementsController, :new_card
+
+    post "/statements/upload", StatementsController, :upload
+    get "/statements/txns", StatementsController, :list_txns
+    get "/statements/month-summary-spent", StatementsController, :month_summay_spent
+
+    get "/charts", ChartsController, :fetch_user_charts
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", KachingkoApiWeb do
   #   pipe_through :api

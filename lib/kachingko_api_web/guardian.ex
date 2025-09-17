@@ -28,12 +28,13 @@ defmodule KachingkoApiWeb.Guardian do
     {:ok, claims}
   end
 
-  # 30 days for mobile
-  defp get_token_ttl("mobile"), do: 30 * 24 * 3600
-  # 7 days for web
-  defp get_token_ttl("web"), do: 7 * 24 * 3600
-  # 1 day default
-  defp get_token_ttl(_), do: 24 * 3600
+  # Consider making these configurable
+  defp get_token_ttl("mobile"), do: Application.get_env(:kachingko_api, :mobile_token_ttl)
+
+  defp get_token_ttl("web"),
+    do: Application.get_env(:kachingko_api, :web_token_ttl)
+
+  defp get_token_ttl(aud), do: raise("Env config for #{aud} is required!")
 
   def after_encode_and_sign(resource, claims, token, _options) do
     with {:ok, _} <- Guardian.DB.after_encode_and_sign(resource, claims["typ"], claims, token) do

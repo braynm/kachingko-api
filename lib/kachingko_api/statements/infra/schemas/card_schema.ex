@@ -5,7 +5,7 @@ defmodule KachingkoApi.Statements.Infra.Schemas.CardSchema do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
-  schema "user_card" do
+  schema "card" do
     field :user_id, :integer
     field :bank, :string
     field :name, :string

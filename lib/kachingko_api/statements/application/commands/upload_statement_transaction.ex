@@ -21,12 +21,6 @@ defmodule KachingkoApi.Statements.Application.Commands.UploadStatementTransactio
     @supported_banks ["rcbc", "eastwest"]
     @derive {Jason.Encoder, only: [:card_id, :user_id, :bank, :pdf_pw, :file]}
 
-    @max_file_size Application.compile_env(
-                     :kachingko_api,
-                     [:file_upload, :max_file_size],
-                     10_000_000
-                   )
-
     @allowed_extensions Application.compile_env(
                           :kachingko_api,
                           [:file_upload, :allowed_extensions],
@@ -53,7 +47,6 @@ defmodule KachingkoApi.Statements.Application.Commands.UploadStatementTransactio
     defp validate_file(%{changes: %{file: %Plug.Upload{} = file}} = changeset) do
       changeset
       |> validate_file_type(file)
-      |> validate_file_size(file)
     end
 
     defp validate_file(changeset) do
@@ -64,17 +57,6 @@ defmodule KachingkoApi.Statements.Application.Commands.UploadStatementTransactio
       #   "PDF statement attachment is required"
       # )
     end
-
-    defp validate_file_size(changeset = %Ecto.Changeset{}, %{content_type: _, size: size})
-         when size > @max_file_size do
-      add_error(
-        changeset,
-        :file,
-        "File too large, max size: #{@max_file_size} file size: #{size}"
-      )
-    end
-
-    defp validate_file_size(changeset, _), do: changeset
 
     defp validate_bank(%Ecto.Changeset{valid?: true, changes: changes} = changeset) do
       if String.downcase(changes.bank) in @supported_banks do
