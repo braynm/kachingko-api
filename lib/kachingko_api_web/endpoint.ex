@@ -11,6 +11,14 @@ defmodule KachingkoApiWeb.Endpoint do
     same_site: "Lax"
   ]
 
+  if Mix.env() == :dev do
+    plug CORSPlug, origin: ["http://localhost:3333"]
+  end
+
+  if Mix.env() == :prod do
+    plug CORSPlug, origin: ["https://kachingko.com"]
+  end
+
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]

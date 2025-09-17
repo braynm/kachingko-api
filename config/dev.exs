@@ -2,10 +2,7 @@ import Config
 
 # Configure your database
 config :kachingko_api, KachingkoApi.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "kachingko_api_dev",
+  url: System.get_env("DATABASE_URL"),
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -23,7 +20,7 @@ config :kachingko_api, KachingkoApiWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "8nDm21YgIFszgjKnb1O4U0OHHToDRKhXdIiAr6klMuGXiOorCAswfscsNyUMI6e3",
+  secret_key_base: System.get_env("SECRET_KEY_BASE"),
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:kachingko_api, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:kachingko_api, ~w(--watch)]}
@@ -86,3 +83,28 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :kachingko_api,
+  # 30 minuets
+  web_token_ttl: 30 * 60
+
+config :kachingko_api, KachingkoApiWeb.Guardian,
+  issuer: "cc_spending_api",
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY")
+
+config :guardian, Guardian.DB,
+  # Add your repository module
+  repo: KachingkoApi.Repo,
+  # default
+  schema_name: "guardian_tokens",
+  # store all token types if not set
+  # token_types: ["refresh_token"],
+  # default: 60 minutes
+  sweep_interval: 60
+
+config :kachingko_api, KachingkoApi.Vault, []
+
+config :kachingko_api, :supported_banks, [
+  "eastwest",
+  "rcbc"
+]

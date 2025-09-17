@@ -19,3 +19,28 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
+
+config :kachingko_api,
+  # 30 days for dev
+  web_token_ttl: 30 * 24 * 3600
+
+config :kachingko_api, KachingkoApiWeb.Guardian,
+  issuer: "cc_spending_api",
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY")
+
+config :guardian, Guardian.DB,
+  # Add your repository module
+  repo: KachingkoApi.Repo,
+  # default
+  schema_name: "guardian_tokens",
+  # store all token types if not set
+  # token_types: ["refresh_token"],
+  # default: 60 minutes
+  sweep_interval: 60
+
+config :kachingko_api, KachingkoApi.Vault, []
+
+config :kachingko_api, :supported_banks, [
+  "eastwest",
+  "rcbc"
+]

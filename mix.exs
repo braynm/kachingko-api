@@ -71,7 +71,7 @@ defmodule KachingkoApi.MixProject do
       {:bcrypt_elixir, "~> 3.0"},
       {:double, "~> 0.8.2", only: :test},
       {:cors_plug, "~> 3.0"},
-      {:erlport, "~> 0.10.1"},
+      {:erlport, github: "braynm/erlport", branch: "fix/py311-inspect"},
       {:money, "~> 1.14"},
       {:cloak_ecto, "~> 1.2"},
       {:decimal, "~> 2.0"},
