@@ -61,10 +61,18 @@ API will be available at http://localhost:4000
 Create `.env`:
 
 ```bash
-DATABASE_URL=postgres://user:pass@localhost/kachingko_dev
-SECRET_KEY_BASE=your_secret_key_here
-PHX_HOST=localhost
-PORT=4000
+export DATABASE_URL=
+export PORT=8888
+export SECRET_KEY_BASE=
+export CLOAK_KEY=
+export GUARDIAN_SECRET_KEY=
+
+# generate SECRET_KEY_BASE and GUARDIAN_SECRET_KEY
+mix phx.gen.secret
+
+# generate CLOAK_KEY
+iex> :crypto.strong_rand_bytes(32) |> Base.encode64()
+
 ```
 
 ## Available Commands
@@ -79,56 +87,45 @@ mix ecto.migrate     # Run database migrations
 mix ecto.reset       # Reset database
 ```
 
-## API Endpoints
-
-### Authentication
-```
-POST   /api/auth/login
-POST   /api/auth/register
-DELETE /api/auth/logout
-```
-
-### Transactions
-```
-GET    /api/transactions           # List transactions
-POST   /api/transactions/upload    # Upload statement
-PUT    /api/transactions/:id       # Update transaction
-DELETE /api/transactions/:id       # Delete transaction
-```
-
-### Categories
-```
-GET    /api/categories             # List categories
-POST   /api/categories             # Create category
-PUT    /api/categories/:id         # Update category
-```
-
-### Analytics
-```
-GET    /api/analytics/spending     # Spending analysis
-GET    /api/analytics/trends       # Trend analysis
-GET    /api/analytics/budgets      # Budget overview
-```
-
-Full API documentation available at `/api/docs` when running the server.
-
 ## Project Structure
 
 ```
-lib/
-├── kachingko/              # Core business logic
-│   ├── accounts/           # User management
-│   ├── transactions/       # Transaction processing
-│   ├── categories/         # Category management
-│   ├── analytics/          # Analytics engine
-│   └── parsers/           # PDF parsing logic
-├── kachingko_web/         # Phoenix web layer
-│   ├── controllers/       # API controllers
-│   ├── views/            # JSON views
-│   └── router.ex         # Route definitions
-└── kachingko/
-    ├── repo.ex           # Database interface
-    └── application.ex    # Application supervisor
+.
+├── README.md
+├── lib
+│   ├── kachingko_api
+│   │   ├── application.ex
+│   │   ├── authentication
+│   │   ├── charts
+│   │   ├── encrypted_types.ex
+│   │   ├── mailer.ex
+│   │   ├── repo.ex
+│   │   ├── shared
+│   │   ├── statements
+│   │   ├── utils
+│   │   └── vault.ex
+│   ├── kachingko_api.ex
+        ├── application.ex
+        ├── authentication
+        ├── charts
+        ├── encrypted_types.ex
+        ├── mailer.ex
+        ├── repo.ex
+        ├── shared
+        ├── statements
+        ├── utils
+        └── vault.ex
+│   ├── kachingko_api_web
+│   │   ├── auth_error_handler.ex
+│   │   ├── components
+│   │   ├── controllers
+│   │   ├── endpoint.ex
+│   │   ├── gettext.ex
+│   │   ├── guardian.ex
+│   │   ├── plugs
+│   │   ├── router.ex
+│   │   └── telemetry.ex
+│   └── kachingko_api_web.ex
 ```
 
 ## Development
@@ -161,16 +158,10 @@ mix test --cover
 
 ### Adding New Bank Parser
 
-1. Create parser module in `lib/kachingko/parsers/`
-2. Implement `StatementParser` behaviour
-3. Add bank configuration to `config/config.exs`
-4. Write tests in `test/kachingko/parsers/`
-
-## Deployment
-
-### Using Docker
-
-TODO: add `Docker` setup
+1. Create parser module in `lib/kachingko_api/statements/infra/parsers/`
+2. Implement `BankParser` behaviour
+3. Add bank configuration to `config/config.exs` inside `:supported_banks`
+4. Write tests in `test/kachingko_api/statements/infra/parsers/`
 
 ### Using releases
 
@@ -186,7 +177,7 @@ mix compile
 mix release
 
 # Run release
-_build/prod/rel/kachingko/bin/kachingko start
+_build/prod/rel/kachingko_api/bin/kachingko_api start
 ```
 
 ## Contributing
@@ -210,6 +201,5 @@ This project is licensed under the Apache 2.0 - see the [LICENSE](LICENSE) file 
 
 ## Support
 
-- **Documentation**: [kachingko-docs](https://github.com/yourusername/kachingko-docs)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/kachingko-api/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/kachingko-api/discussions)
+- **Documentation**: [kachingko-docs](https://github.com/braynm/kachingko-api)
+- **Discussions**: [GitHub Discussions](https://github.com/braynm/kachingko-api/discussions)
