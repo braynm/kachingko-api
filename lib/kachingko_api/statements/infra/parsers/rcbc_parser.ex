@@ -41,6 +41,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
   - List of transaction maps with keys: :sale_date, :post_date, :desc, :amount
   - {:error, :malformed_extracted_text} if input is not a list
   """
+  @impl true
   def parse(extracted_texts) when is_list(extracted_texts) do
     txns =
       extracted_texts
