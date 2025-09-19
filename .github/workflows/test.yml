@@ -30,6 +30,10 @@ jobs:
     env:
       MIX_ENV: test
       DATABASE_URL_TEST: "ecto://postgres:postgres@localhost:5432/app_test"
+      CLOAK_KEY: "+TDe2CBtTChb7s8F+rKy/vE7IawQP7H8vQqLhqAhNyA="
+      SECRET_KEY_BASE: "+TDe2CBtTChb7s8F+rKy/vE7IawQP7H8vQqLhqAhNyA="
+      GUARDIAN_SECRET_KEY: "+TDe2CBtTChb7s8F+rKy/vE7IawQP7H8vQqLhqAhNyA="
+      PORT: "8888"
 
     steps:
       - name: Checkout code
