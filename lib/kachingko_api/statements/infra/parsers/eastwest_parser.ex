@@ -41,6 +41,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
   - List of transaction maps with keys: :sale_date, :post_date, :desc, :amount
   - {:error, :malformed_extracted_text} if input is not a list
   """
+  @impl true
   def parse(extracted_texts) when is_list(extracted_texts) do
     extracted_texts = charlist_to_sigil(extracted_texts)
 
@@ -64,14 +65,16 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
   defp find_statement_date(extracted_texts) when is_list(extracted_texts) do
     matched_statement_date =
       extracted_texts
-      |> Enum.find(fn txts ->
-        Enum.find(txts, &match?(["Statement", "Date" | _rest], &1))
+      |> Enum.flat_map(& &1)
+      |> Enum.find(fn txt ->
+        match?(["Statement", "Date" | _rest], txt) or
+          match?([_, "Statement", "Date" | _rest], txt)
       end)
-      |> Enum.find(&match?(["Statement", "Date" | _rest], &1))
 
-    ["Statement", "Date" | rest] = matched_statement_date
-
-    rest
+    case matched_statement_date do
+      ["Statement", "Date" | rest] -> rest
+      [_, "Statement", "Date" | rest] -> rest
+    end
   end
 
   defp charlist_to_sigil(extracted_texts) when is_list(extracted_texts) do
@@ -82,7 +85,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   defp charlist_to_sigil(_extracted_texts), do: parse(nil)
 
-  def find_transaction_page(extracted_texts) when is_list(extracted_texts) do
+  defp find_transaction_page(extracted_texts) when is_list(extracted_texts) do
     Enum.filter(extracted_texts, fn txt_list ->
       Enum.any?(txt_list, &match?(["SALE", "POST", "CURRENCY", "PESO"], &1))
     end)
@@ -91,14 +94,14 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
   defp find_transaction_list(extracted_texts) when is_list(extracted_texts) do
     extracted_texts
     |> Enum.with_index()
-    |> IO.inspect()
     |> Enum.flat_map(fn
       {txts, 0} ->
+        # TODO: make this regex for more accurate parsing
         header_index =
           Enum.find_index(
             txts,
             &match?(["SALE", "POST", "CURRENCY", "PESO"], &1)
-          ) + 4
+          ) + 6
 
         end_of_page_index =
           Enum.find_index(
@@ -109,7 +112,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
         end_of_bal? = Enum.find_index(txts, &match?(["***END", "OF", "STATEMENT***"], &1))
 
         end_txn_marker =
-          if not is_nil(end_of_bal?), do: end_of_bal? - 1, else: end_of_page_index - 1
+          if not is_nil(end_of_bal?), do: end_of_bal? - 2, else: end_of_page_index - 1
 
         Enum.slice(txts, header_index..end_txn_marker)
 
@@ -195,9 +198,9 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
   end
 
   # Match monetary amounts: optional negative, digits with optional commas, optional decimal
-  def split_txn_desc_and_amount([]), do: {nil, nil}
+  defp split_txn_desc_and_amount([]), do: {nil, nil}
 
-  def split_txn_desc_and_amount(txn) do
+  defp split_txn_desc_and_amount(txn) do
     [amount | middle_reversed] = Enum.reverse(txn)
 
     transaction_parts =
@@ -224,10 +227,10 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
     amt
   end
 
-  def to_utc_datetime(date_str_iso8601) do
+  defp to_utc_datetime(date_str_iso8601) do
     DateTimezone.from_pdf("#{date_str_iso8601} 00:00:00")
   end
 
-  def validate_format("eastwest"), do: false
+  @impl true
   def supported_bank, do: "eastwest"
 end

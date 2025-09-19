@@ -157,12 +157,7 @@ defmodule KachingkoApi.KachingkoApi.UploadStatementsTest do
              )
   end
 
-    defp stub_file_stat(path, size) do
-    Agent.start_link(fn -> %{} end, name: :file_stat_stub)
-    Agent.update(:file_stat_stub, &Map.put(&1, path, size))
-  end
-
-defp valid_upload_file do
+  defp valid_upload_file do
     %Plug.Upload{
       path: "/tmp/test.pdf",
       filename: "rcbc_statement_2024.pdf"

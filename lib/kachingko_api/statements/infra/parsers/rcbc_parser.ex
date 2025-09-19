@@ -41,6 +41,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
   - List of transaction maps with keys: :sale_date, :post_date, :desc, :amount
   - {:error, :malformed_extracted_text} if input is not a list
   """
+  @impl true
   def parse(extracted_texts) when is_list(extracted_texts) do
     txns =
       extracted_texts
@@ -66,7 +67,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
 
   defp charlist_to_sigil(_extracted_texts), do: parse(nil)
 
-  def find_transaction_page(extracted_texts) when is_list(extracted_texts) do
+  defp find_transaction_page(extracted_texts) when is_list(extracted_texts) do
     Enum.filter(extracted_texts, fn txt_list ->
       Enum.any?(txt_list, fn txt ->
         case txt do
@@ -82,11 +83,12 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
     |> Enum.with_index()
     |> Enum.flat_map(fn
       {txts, 0} ->
+        # TODO: Pattern match + Regex for more accurate finding of txn items
         header_index =
           Enum.find_index(
             txts,
             &match?(["SALE", "DATE", "POST", "DATE", "DESCRIPTION", "AMOUNT" | _], &1)
-          ) + 4
+          ) + 3
 
         end_of_page_index =
           Enum.find_index(
@@ -97,7 +99,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
         end_of_bal? = Enum.find_index(txts, &match?(["BALANCE", "END" | _], &1))
 
         end_txn_marker =
-          if not is_nil(end_of_bal?), do: end_of_bal? - 2, else: end_of_page_index - 1
+          if not is_nil(end_of_bal?), do: end_of_bal? - 1, else: end_of_page_index - 1
 
         Enum.slice(txts, header_index..end_txn_marker)
 
@@ -108,7 +110,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
             &match?(["SALE", "DATE", "POST", "DATE", "DESCRIPTION", "AMOUNT" | _], &1)
           ) + 2
 
-        end_of_bal? = Enum.find_index(txts, &match?(["BALANCE", "END" | _], &1)) - 2
+        end_of_bal? = Enum.find_index(txts, &match?(["BALANCE", "END" | _], &1)) - 1
 
         Enum.slice(txts, header_index..end_of_bal?)
     end)
@@ -128,21 +130,28 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
 
   defp normalize_and_to_transaction(result) when is_list(result) do
     Enum.map(result, fn txn ->
-      [sale_date, post_date | rest] = txn
-
-      case Enum.split(rest, -1) do
-        {[], []} ->
+      case txn do
+        [sale_date, post_date | rest] ->
           %{}
 
-        {desc, [amt]} ->
-          # TODO: convert to txn value object
-          %{
-            sale_date: to_utc_datetime(sale_date),
-            posted_date: to_utc_datetime(post_date),
-            encrypted_details: maybe_normalize_payment_txn(Enum.join(desc, " ")),
-            encrypted_amount: normalize_amt(amt)
-          }
+          case Enum.split(rest, -1) do
+            {[], []} ->
+              %{}
+
+            {desc, [amt]} ->
+              %{
+                sale_date: to_utc_datetime(sale_date),
+                posted_date: to_utc_datetime(post_date),
+                encrypted_details: maybe_normalize_payment_txn(Enum.join(desc, " ")),
+                encrypted_amount: normalize_amt(amt)
+              }
+          end
+
+        _ ->
+          %{}
       end
+
+      # [sale_date, post_date | rest] = txn
     end)
     # |> Enum.filter(&(&1 !== %{}))
     |> Enum.filter(fn txn ->
@@ -179,13 +188,15 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
   #   datetime
   # end
 
-  def to_utc_datetime(date_str) do
+  defp to_utc_datetime(date_str) do
     [mm, dd, yy] = String.split(date_str, "/")
     full_year = "20" <> yy
 
     DateTimezone.from_pdf("#{full_year}-#{mm}-#{dd} 00:00:00")
   end
 
-  def validate_format("rcbc"), do: false
-  def supported_bank, do: "rcbc"
+  @impl true
+  def supported_bank() do
+    "rcbc"
+  end
 end

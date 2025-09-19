@@ -1,0 +1,73 @@
+name: Run Tests on Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:15
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_test
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    strategy:
+      matrix:
+        elixir: ['1.18.4']
+        otp: ['28.0']
+
+    env:
+      MIX_ENV: test
+      DATABASE_URL_TEST: "ecto://postgres:postgres@localhost:5432/app_test"
+      CLOAK_KEY: "+TDe2CBtTChb7s8F+rKy/vE7IawQP7H8vQqLhqAhNyA="
+      SECRET_KEY_BASE: "+TDe2CBtTChb7s8F+rKy/vE7IawQP7H8vQqLhqAhNyA="
+      GUARDIAN_SECRET_KEY: "+TDe2CBtTChb7s8F+rKy/vE7IawQP7H8vQqLhqAhNyA="
+      PORT: "8888"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-
+
+      - name: Compile
+        run: mix compile --warnings-as-errors
+
+      - name: Setup database
+        run: mix ecto.create && mix ecto.migrate
+
+      - name: Run tests
+        run: mix test
+

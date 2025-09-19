@@ -6,10 +6,7 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :kachingko_api, KachingkoApi.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  port: 5434,
+  url: System.get_env("DATABASE_URL_TEST"),
   database: "kachingko_api_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
@@ -36,3 +33,8 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+config :kachingko_api, :supported_banks, [
+  "eastwest",
+  "rcbc"
+]

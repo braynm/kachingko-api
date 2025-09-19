@@ -4,7 +4,8 @@ defmodule KachingkoApi.Statements.Domain.Services.FileProcessor do
   @max_file_size Application.compile_env(
                    :kachingko_api,
                    [:file_upload, :max_file_size],
-                   10_000_000 # 10 MB
+                   # 10 MB
+                   10_000_000
                  )
   @allowed_extensions Application.compile_env(
                         :kachingko_api,
@@ -21,7 +22,7 @@ defmodule KachingkoApi.Statements.Domain.Services.FileProcessor do
   end
 
   defp validate_file_size(%{path: path}, file_stat_fn) do
-    case file_stat_fn.(path)  do
+    case file_stat_fn.(path) do
       {:ok, %{size: size}} when size <= @max_file_size ->
         :ok
 

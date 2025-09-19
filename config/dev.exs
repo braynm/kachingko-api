@@ -86,7 +86,7 @@ config :swoosh, :api_client, false
 
 config :kachingko_api,
   # 30 minuets
-  web_token_ttl: 30 * 60
+  web_token_ttl: 250 * 60
 
 config :kachingko_api, KachingkoApiWeb.Guardian,
   issuer: "cc_spending_api",
