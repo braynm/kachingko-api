@@ -87,9 +87,8 @@ select
         sale_date::date,
         coalesce(amount, 0) amount
       FROM txns
-      WHERE date_trunc('month', txns.sale_date::date) = date_trunc('month', now())::date
       ORDER BY amount desc
-      LIMIT 5
+      LIMIT 10
 		) t
 	) top_expenses
 	

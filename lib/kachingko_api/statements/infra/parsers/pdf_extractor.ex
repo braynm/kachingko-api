@@ -1,5 +1,5 @@
 defmodule KachingkoApi.Statements.PdfExtractor do
-        use GenServer
+  use GenServer
 
   @python_module :pdf_extractor
 
@@ -26,6 +26,6 @@ defmodule KachingkoApi.Statements.PdfExtractor do
         password
       ])
 
-{:reply, result, state}
+    {:reply, result, state}
   end
 end

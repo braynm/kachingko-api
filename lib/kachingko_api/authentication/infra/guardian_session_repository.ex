@@ -60,7 +60,7 @@ defmodule KachingkoApi.Authentication.Infra.GuardianSessionRepository do
   def revoke_all_user_tokens(user_id) when is_binary(user_id) do
     case EctoUserRepository.get_by_id(String.to_integer(user_id)) do
       {:ok, user} ->
-        case Guardian.DB.revoke_all(%{"aud" =>  "web", "sub" => to_string(user.id)}) do
+        case Guardian.DB.revoke_all(%{"aud" => "web", "sub" => to_string(user.id)}) do
           {:ok, _} -> Result.ok(:ok)
           _ -> Result.error(:revoken_token_error)
         end

@@ -7,5 +7,4 @@ defmodule KachingkoApi.Statements.Domain.BankParser do
 
   @callback parse(binary()) :: Result.t([map()])
   @callback supported_bank() :: String.t()
-  @callback validate_format(binary()) :: Result.t(boolean())
 end
