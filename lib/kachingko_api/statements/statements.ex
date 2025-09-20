@@ -43,7 +43,7 @@ defmodule KachingkoApi.Statements do
   def list_user_transaction(user_id, params \\ [], deps \\ list_txns_deps())
 
   def list_user_transaction(user_id, params, deps) do
-    params = Keyword.put(params, "user_id", user_id)
+    params = Keyword.put(params, :user_id, user_id)
 
     with {:ok, command} <- ListUserTransaction.new(params) do
       ListUserTransactionHandler.handle(command, deps)
