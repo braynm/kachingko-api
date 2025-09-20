@@ -30,7 +30,15 @@ defmodule KachingkoApi.Shared.Pagination.Cursor do
 
   def deserialize_position(position) do
     Map.new(position, fn {key, value} ->
-      {String.to_atom(key), deserialize_value(value)}
+
+    atom_key = case key do
+      key when key in ~W[sale_date id] ->
+        String.to_existing_atom(key)
+      _ ->
+        raise "Invalid cursor field: #{key}"
+    end
+
+    {atom_key, deserialize_value(value)}
     end)
   end
 
