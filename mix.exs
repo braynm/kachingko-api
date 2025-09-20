@@ -75,7 +75,8 @@ defmodule KachingkoApi.MixProject do
       {:cloak_ecto, "~> 1.2"},
       {:decimal, "~> 2.0"},
       {:tzdata, "~> 1.1"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
     ]
   end
 

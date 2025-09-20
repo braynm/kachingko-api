@@ -1,0 +1,43 @@
+name: Elixir Security Audit
+
+on:
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "0 4 * * 1" # Every Monday at 4am UTC
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        elixir: ['1.18.4']
+        otp: ['28.0']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Run Hex Audit
+        run: mix hex.audit
+        continue-on-error: true
+
+      - name: Run Sobelow
+        run: mix sobelow
+        continue-on-error: true
+
+      # Optional: show warnings in GitHub summary
+      - name: Summarize results
+        run: |
+          echo "## Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Hex Audit + Sobelow completed. See logs for warnings." >> $GITHUB_STEP_SUMMARY
