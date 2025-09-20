@@ -7,9 +7,6 @@ defmodule KachingkoApiWeb.StatementsController do
   def list_txns(conn, params) do
     user = Guardian.Plug.current_resource(conn)
 
-    # convert map to keyword list with atom keys
-    params = Enum.map(Map.to_list(params), fn {k, v} -> {String.to_atom(k), v} end)
-
     case Statements.list_user_transaction(user.id, params) do
       {:ok, %{metadata: metadata, entries: entries}} ->
         json(conn, %{

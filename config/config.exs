@@ -63,6 +63,17 @@ config :phoenix, :json_library, Jason
 # Timezone
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
+config :phoenix, :filter_parameters, [
+  "password",
+  "password_confirmation",
+  "ssn",
+  "token",
+  "secret",
+  "pdf_pw",
+  "pw"
+]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
