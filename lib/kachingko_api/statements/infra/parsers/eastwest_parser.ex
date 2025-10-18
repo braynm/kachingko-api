@@ -3,7 +3,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
   EastWest-specific PDF parser implementation
   All amounts are treated as PHP currency
 
-  This parser processes RCBC credit card statements that have been extracted from PDF format.
+  This parser processes EastWest credit card statements that have been extracted from PDF format.
   The parser expects extracted text in a nested list format where:
   - First level: Pages
   - Second level: Rows per page
@@ -11,8 +11,8 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   Example input structure:
   [
-    [["RCBC", "STATEMENT"], ["ACCOUNT", "123456"]],  # Page 1
-    [["PREVIOUS", "STATEMENT", "BALANCE"], ["01/15", "01/16", "GROCERY", "1,234.56-"]]  # Page 2
+    [["EastWest", "STATEMENT"], ["ACCOUNT", "123456"]],  # Page 1
+    [["PREVIOUS", "STATEMENT", "BALANCE"], ["JAN", "15", "JAN", "16", "GROCERY", "1,234.56"]]  # Page 2
   ]
   """
 
@@ -20,12 +20,12 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
   alias KachingkoApi.Statements.Domain.ValueObjects.Amount
   @behaviour KachingkoApi.Statements.Domain.BankParser
 
-  # Markers used to identify the start and end of transaction data in RCBC statements
+  # Markers used to identify the start and end of transaction data in EastWest statements
   # TODO: some statement have no "PREVIOUS STATEMENT BALANCE" text for first's card
   # transaction. We need to differentiate per pair
 
   @doc """
-  Main parsing function that orchestrates the entire RCBC statement parsing process.
+  Main parsing function that orchestrates the entire EastWest statement parsing process.
 
   Takes extracted text from PDF and returns structured transaction data.
   The parsing pipeline follows these steps:
@@ -62,6 +62,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   def parse(_), do: {:error, :malformed_extracted_text}
 
+  # Finds the statement date from extracted text for year calculation
   defp find_statement_date(extracted_texts) when is_list(extracted_texts) do
     matched_statement_date =
       extracted_texts
@@ -77,6 +78,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
     end
   end
 
+  # Convert charlists to strings for consistent processing
   defp charlist_to_sigil(extracted_texts) when is_list(extracted_texts) do
     Enum.map(extracted_texts, fn page ->
       Enum.map(page, fn row -> Enum.map(row, &to_string/1) end)
@@ -85,12 +87,14 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   defp charlist_to_sigil(_extracted_texts), do: parse(nil)
 
+  # Filter pages that contain transaction data based on header pattern
   defp find_transaction_page(extracted_texts) when is_list(extracted_texts) do
     Enum.filter(extracted_texts, fn txt_list ->
       Enum.any?(txt_list, &match?(["SALE", "POST", "CURRENCY", "PESO"], &1))
     end)
   end
 
+  # Extract transaction rows between header and footer markers
   defp find_transaction_list(extracted_texts) when is_list(extracted_texts) do
     extracted_texts
     |> Enum.with_index()
@@ -131,6 +135,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   defp find_transaction_list(_), do: parse(nil)
 
+    # Convert raw transaction rows into structured transaction maps
   defp normalize_and_to_transaction(result, statement_date) when is_list(result) do
     [st_month, _, year] =
       statement_date
@@ -171,9 +176,16 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
                 year
               end
 
+
+            details = maybe_normalize_payment_txn(Enum.join(desc, " "))
+            {category, subcategory} = 
+                KachingkoApi.Statements.TransactionCategorizer.categorize(details)
+
             %{
-              encrypted_details: maybe_normalize_payment_txn(Enum.join(desc, " ")),
+              encrypted_details: details,
               encrypted_amount: normalize_amt(amt),
+              category: category, 
+              subcategory: subcategory, 
               sale_date: to_utc_datetime("#{sale_year}-#{months[sale_m]}-#{sale_d}"),
               posted_date: to_utc_datetime("#{post_year}-#{months[post_m]}-#{post_d}")
             }
@@ -187,6 +199,8 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   defp normalize_and_to_transaction(_result, _), do: parse(nil)
 
+  # normalize description for payment txns
+  # to make query faster
   defp maybe_normalize_payment_txn(desc) do
     # normalize description for payment txns
     # to make query faster
@@ -211,6 +225,8 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
     {amount, transaction_parts}
   end
 
+  # Split transaction parts into description and amount components
+  # Handle foreign currency transactions by removing foreign amounts
   defp maybe_remove_foreign_currency([foreign_amt, currency | rest] = txn)
        when byte_size(currency) == 3 do
     if String.match?(foreign_amt, ~r/^-?\d{1,3}(?:,\d{3})*(?:\.\d+)?$/),
@@ -220,6 +236,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   defp maybe_remove_foreign_currency(parts), do: parts
 
+  # Normalize amount string to Amount struct
   defp normalize_amt(amt) do
     amt = String.trim(amt)
     {:ok, amt} = Amount.new(amt)
@@ -227,6 +244,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
     amt
   end
 
+  # Convert date string to UTC datetime for storage
   defp to_utc_datetime(date_str_iso8601) do
     DateTimezone.from_pdf("#{date_str_iso8601} 00:00:00")
   end

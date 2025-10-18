@@ -16,7 +16,9 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
           details: String.t(),
           amount: String.t(),
           inserted_at: DateTime.t(),
-          updated_at: DateTime.t()
+          updated_at: DateTime.t(),
+          category: String.t(),
+          subcategory: String.t()
         }
 
   defstruct [
@@ -28,7 +30,10 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
     :details,
     :amount,
     :inserted_at,
-    :updated_at
+    :updated_at,
+
+    :category,
+    :subcategory
   ]
 
   def new(params) do
@@ -41,7 +46,11 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
       details: params.encrypted_details,
       amount: params.encrypted_amount,
       inserted_at: params.inserted_at,
-      updated_at: params.updated_at
+      updated_at: params.updated_at,
+
+      category: params.category,
+      subcategory: params.subcategory
+
     })
   end
 
@@ -54,7 +63,11 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
       details: params.encrypted_details,
       amount: Amount.to_string(params.encrypted_amount),
       inserted_at: params.inserted_at,
-      updated_at: params.updated_at
+      updated_at: params.updated_at,
+
+
+      category: params.category,
+      subcategory: params.subcategory
     })
   end
 
@@ -68,7 +81,11 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
       details: params.encrypted_details,
       amount: params.encrypted_amount,
       inserted_at: params.inserted_at,
-      updated_at: params.updated_at
+      updated_at: params.updated_at,
+
+
+      category: params.category,
+      subcategory: params.subcategory
     })
   end
 

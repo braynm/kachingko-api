@@ -139,11 +139,18 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
               %{}
 
             {desc, [amt]} ->
+              txn_details = maybe_normalize_payment_txn(Enum.join(desc, " "))
+
+              {category, subcategory} =
+                KachingkoApi.Statements.TransactionCategorizer.categorize(txn_details)
+
               %{
                 sale_date: to_utc_datetime(sale_date),
                 posted_date: to_utc_datetime(post_date),
-                encrypted_details: maybe_normalize_payment_txn(Enum.join(desc, " ")),
-                encrypted_amount: normalize_amt(amt)
+                encrypted_details: txn_details,
+                encrypted_amount: normalize_amt(amt),
+                category: category,
+                subcategory: subcategory,
               }
           end
 

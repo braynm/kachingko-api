@@ -12,6 +12,9 @@ defmodule KachingkoApi.Statements.Infra.Schemas.TransactionSchema do
     field :posted_date, :utc_datetime
     field :encrypted_details, KachingkoApi.EncryptedTypes.Binary
     field :encrypted_amount, EncryptedTypes.Money
+
+    field :category, :string
+    field :subcategory, :string
     # field :encrypted_amount, :string
 
     # TODO: add covered date? e.g. 2024-01-01 to 2024-02-01
