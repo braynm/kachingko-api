@@ -200,8 +200,6 @@ defmodule KachingkoApi.Statements.TransactionCategorizer do
     ]
   end
 
-  @fallback_category "Others"
-
   @doc """
   Returns {category, subcategory} if found, or {"Uncategorized", nil} otherwise.
   """
