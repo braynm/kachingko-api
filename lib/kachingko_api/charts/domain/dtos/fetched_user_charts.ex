@@ -21,8 +21,6 @@ defmodule KachingkoApi.Charts.Domain.Dtos.FetchedUserCharts do
   ]
 
   def new(chart) when is_map(chart) do
-    IO.inspect(chart)
-
     Result.ok(%__MODULE__{
       ytd_amount: convert_decimal(chart["ytd_amount"]),
       monthly_avg: convert_decimal(chart["monthly_avg"]),

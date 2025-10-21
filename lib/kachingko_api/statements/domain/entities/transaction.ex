@@ -31,7 +31,6 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
     :amount,
     :inserted_at,
     :updated_at,
-
     :category,
     :subcategory
   ]
@@ -47,10 +46,8 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
       amount: params.encrypted_amount,
       inserted_at: params.inserted_at,
       updated_at: params.updated_at,
-
       category: params.category,
       subcategory: params.subcategory
-
     })
   end
 
@@ -64,8 +61,6 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
       amount: Amount.to_string(params.encrypted_amount),
       inserted_at: params.inserted_at,
       updated_at: params.updated_at,
-
-
       category: params.category,
       subcategory: params.subcategory
     })
@@ -82,8 +77,6 @@ defmodule KachingkoApi.Statements.Domain.Entities.Transaction do
       amount: params.encrypted_amount,
       inserted_at: params.inserted_at,
       updated_at: params.updated_at,
-
-
       category: params.category,
       subcategory: params.subcategory
     })

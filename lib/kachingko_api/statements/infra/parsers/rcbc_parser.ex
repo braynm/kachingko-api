@@ -150,7 +150,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.RcbcParser do
                 encrypted_details: txn_details,
                 encrypted_amount: normalize_amt(amt),
                 category: category,
-                subcategory: subcategory,
+                subcategory: subcategory
               }
           end
 

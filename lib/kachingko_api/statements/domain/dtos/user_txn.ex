@@ -11,10 +11,11 @@ defmodule KachingkoApi.Statements.Domain.Dtos.UserTxn do
           posted_date: String.t(),
           details: String.t(),
           amount: String.t(),
-          card: String.t()
+          card: String.t(),
+          category: String.t()
         }
 
-  defstruct [:id, :user_id, :sale_date, :posted_date, :details, :amount, :card]
+  defstruct [:id, :user_id, :sale_date, :posted_date, :details, :amount, :card, :category]
 
   def new(%{transaction: %TransactionSchema{} = transaction, card: %CardSchema{} = card}) do
     Result.ok(%__MODULE__{
@@ -24,7 +25,8 @@ defmodule KachingkoApi.Statements.Domain.Dtos.UserTxn do
       posted_date: to_iso8601(transaction.posted_date),
       details: transaction.encrypted_details,
       amount: transaction.encrypted_amount,
-      card: "#{BankFormatter.format(card.bank)} #{card.name}"
+      card: "#{BankFormatter.format(card.bank)} #{card.name}",
+      category: transaction.category
     })
   end
 

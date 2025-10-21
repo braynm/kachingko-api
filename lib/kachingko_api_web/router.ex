@@ -59,6 +59,9 @@ defmodule KachingkoApiWeb.Router do
     get "/statements/month-summary-spent", StatementsController, :month_summay_spent
 
     get "/charts", ChartsController, :fetch_user_charts
+
+    # current month
+    get "/charts/categories-and-txns", ChartsController, :fetch_category_chart_and_txns
   end
 
   # Other scopes may use custom stacks.

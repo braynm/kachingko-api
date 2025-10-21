@@ -135,7 +135,7 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
 
   defp find_transaction_list(_), do: parse(nil)
 
-    # Convert raw transaction rows into structured transaction maps
+  # Convert raw transaction rows into structured transaction maps
   defp normalize_and_to_transaction(result, statement_date) when is_list(result) do
     [st_month, _, year] =
       statement_date
@@ -176,16 +176,16 @@ defmodule KachingkoApi.Statements.Infra.Parsers.EastWestParser do
                 year
               end
 
-
             details = maybe_normalize_payment_txn(Enum.join(desc, " "))
-            {category, subcategory} = 
-                KachingkoApi.Statements.TransactionCategorizer.categorize(details)
+
+            {category, subcategory} =
+              KachingkoApi.Statements.TransactionCategorizer.categorize(details)
 
             %{
               encrypted_details: details,
               encrypted_amount: normalize_amt(amt),
-              category: category, 
-              subcategory: subcategory, 
+              category: category,
+              subcategory: subcategory,
               sale_date: to_utc_datetime("#{sale_year}-#{months[sale_m]}-#{sale_d}"),
               posted_date: to_utc_datetime("#{post_year}-#{months[post_m]}-#{post_d}")
             }
