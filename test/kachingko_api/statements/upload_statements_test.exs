@@ -40,19 +40,22 @@ defmodule KachingkoApi.KachingkoApi.UploadStatementsTest do
                  sale_date: "2025-06-08",
                  posted_date: "2025-06-08",
                  details: "BONCHON MAKILING CALAMBA PH",
-                 amount: "605.00"
+                 amount: "605.00",
+                 category: "Food & Dining"
                },
                %Transaction{
                  sale_date: "2025-06-13",
                  posted_date: "2026-06-16",
                  details: "MERCURYDRUGCORP1016 CALAMBA PH",
-                 amount: "105.00"
+                 amount: "105.00",
+                 category: "Health & Pharmacy"
                },
                %Transaction{
                  sale_date: "2025-06-13",
                  posted_date: "2026-06-16",
                  details: "GOLDILOCKS WATLERMART LAGUNA PH",
-                 amount: "220.00"
+                 amount: "220.00",
+                 category: "Food & Dining"
                }
              ] = list
     end
