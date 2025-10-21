@@ -203,19 +203,25 @@ defmodule KachingkoApi.Test.Doubles do
         sale_date: ~U[2025-06-08 00:00:00Z],
         posted_date: ~U[2025-06-08 00:00:00Z],
         encrypted_details: "BONCHON MAKILING CALAMBA PH",
-        encrypted_amount: "605.00"
+        encrypted_amount: "605.00",
+        category: "Food & Dining",
+        subcategory: "Food & Dining"
       },
       %{
         sale_date: ~U[2025-06-13 00:00:00Z],
         posted_date: ~U[2026-06-16 00:00:00Z],
         encrypted_details: "MERCURYDRUGCORP1016 CALAMBA PH",
-        encrypted_amount: "105.00"
+        encrypted_amount: "105.00",
+        category: "Health & Pharmacy",
+        subcategory: "Food & Dining"
       },
       %{
         sale_date: ~U[2025-06-13 00:00:00Z],
         posted_date: ~U[2026-06-16 00:00:00Z],
         encrypted_details: "GOLDILOCKS WATLERMART LAGUNA PH",
-        encrypted_amount: "220.00"
+        encrypted_amount: "220.00",
+        category: "Food & Dining",
+        subcategory: "Food & Dining"
       }
     ]
   end

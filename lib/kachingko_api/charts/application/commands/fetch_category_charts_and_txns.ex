@@ -1,5 +1,6 @@
-defmodule KachingkoApi.Charts.Application.Commands.FetchUserCharts do
+defmodule KachingkoApi.Charts.Application.Commands.FetchUserCategoryChartAndTxns do
   alias KachingkoApi.Shared.Result
+  alias KachingkoApi.Utils.DateTimezone
   alias KachingkoApi.Utils.ValidatorFormatter
 
   import Ecto.Changeset
@@ -40,9 +41,8 @@ defmodule KachingkoApi.Charts.Application.Commands.FetchUserCharts do
 
       case Date.from_iso8601(date_field) do
         {:ok, date} ->
-          # TODO: use `date_in_utc` after fixing the stored procedure
-          # date_in_utc = DateTimezone.from_mnl_to_utc(date)
-          put_change(changeset, field, date)
+          date_in_utc = DateTimezone.from_mnl_to_utc(date)
+          put_change(changeset, field, date_in_utc)
 
         {:error, _reason} ->
           add_error(changeset, field, "must be a valid date in YYYY-MM-DD format")
