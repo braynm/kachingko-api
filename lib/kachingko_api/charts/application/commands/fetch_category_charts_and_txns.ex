@@ -42,7 +42,7 @@ defmodule KachingkoApi.Charts.Application.Commands.FetchUserCategoryChartAndTxns
       case Date.from_iso8601(date_field) do
         {:ok, date} ->
           date_in_utc = DateTimezone.from_mnl_to_utc(date)
-          put_change(changeset, field, date)
+          put_change(changeset, field, date_in_utc)
 
         {:error, _reason} ->
           add_error(changeset, field, "must be a valid date in YYYY-MM-DD format")
