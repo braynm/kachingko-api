@@ -30,12 +30,19 @@ defmodule KachingkoApiWeb.AuthController do
   end
 
   def login(conn, params) do
-    audience = Map.get(params, "audience", "web")
+    tracking_params = %{
+      ip_address: conn.remote_ip,
+      fingerprint: get_in(params, ["device", "fingerprint"]),
+      screen_resolution: get_in(params, ["device", "metadata", "screenResolution"]),
+      timezone: get_in(params, ["device", "metadata", "timezone"]),
+      language: get_in(params, ["device", "metadata", "language"]),
+      browserName: get_in(params, ["device", "metadata", "browserName"]),
+      osName: get_in(params, ["device", "metadata", "osName"]),
+      platform: get_in(params, ["device", "metadata", "platform"])
+    }
 
-    email = params["email"] || ""
-    password = params["password"] || ""
-
-    case Authentication.login(email, password, audience) do
+    # case Authentication.login(auth_params, guardian_opts) do
+    case Authentication.login(params["email"], params["password"], "web", tracking_params) do
       {:ok, %{user: user, session: {_, token}}} ->
         user =
           user

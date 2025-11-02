@@ -25,7 +25,7 @@ config :kachingko_api,
   web_token_ttl: 30 * 24 * 3600
 
 config :kachingko_api, KachingkoApiWeb.Guardian,
-  issuer: "cc_spending_api",
+  issuer: "kachingko_api",
   secret_key: System.get_env("GUARDIAN_SECRET_KEY")
 
 config :guardian, Guardian.DB,

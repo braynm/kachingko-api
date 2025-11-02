@@ -1,6 +1,7 @@
 defmodule KachingkoApiWeb.Guardian do
   use Guardian, otp_app: :kachingko_api
 
+  alias KachingkoApi.LoginTracking
   alias KachingkoApi.Authentication.Infra.EctoUserRepository
   alias KachingkoApi.Authentication.Domain.Dtos.AuthenticatedUser
 
@@ -15,29 +16,36 @@ defmodule KachingkoApiWeb.Guardian do
     end
   end
 
-  def build_claims(claims, _user, opts) do
-    # Add audience to claims for different client types
-    audience = Keyword.get(opts, :audience, "web")
-    expires_at = DateTime.add(DateTime.utc_now(), get_token_ttl(audience), :second)
-
-    claims =
-      claims
-      |> Map.put("aud", audience)
-      |> Map.put("exp", DateTime.to_unix(expires_at))
-
-    {:ok, claims}
-  end
+  # def build_claims(claims, _user, opts) do
+  #   # Add audience to claims for different client types
+  #   audience = Keyword.get(opts, :audience, "web")
+  #
+  #   expires_at =
+  #     DateTime.add(DateTime.utc_now(), get_token_ttl(audience), :second)
+  #     |> IO.inspect(label: "EXPIRES ATTTTT")
+  #
+  #   claims =
+  #     claims
+  #     # |> IO.inspect()
+  #     # |> Map.put("access", "2fa_pending")
+  #     |> Map.put("aud", audience)
+  #     |> Map.put("exp", DateTime.to_unix(expires_at))
+  #
+  #   {:ok, claims}
+  # end
 
   # Consider making these configurable
-  defp get_token_ttl("mobile"), do: Application.get_env(:kachingko_api, :mobile_token_ttl)
+  # defp get_token_ttl("mobile"), do: Application.get_env(:kachingko_api, :mobile_token_ttl)
+  #
+  # defp get_token_ttl("web"),
+  #   do: Application.get_env(:kachingko_api, :web_token_ttl)
 
-  defp get_token_ttl("web"),
-    do: Application.get_env(:kachingko_api, :web_token_ttl)
+  # defp get_token_ttl(aud), do: raise("Env config for #{aud} is required!")
 
-  defp get_token_ttl(aud), do: raise("Env config for #{aud} is required!")
-
-  def after_encode_and_sign(resource, claims, token, _options) do
+  def after_encode_and_sign(resource, claims, token, options) do
     with {:ok, _} <- Guardian.DB.after_encode_and_sign(resource, claims["typ"], claims, token) do
+      tracking_opts = Keyword.get(options, :login_tracking)
+      LoginTracking.track_login(tracking_opts, claims)
       {:ok, token}
     end
   end

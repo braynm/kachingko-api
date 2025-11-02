@@ -6,7 +6,6 @@ defmodule KachingkoApi.Authentication.Infra.EctoUserRepository do
   alias KachingkoApi.Shared.{Result, Errors}
   alias KachingkoApi.Authentication.Domain.Entities.User
   alias KachingkoApi.Authentication.Infra.Schemas.UserSchema
-  alias KachingkoApi.Authentication.Infra.Schemas.UserSchema
 
   def save(%User{id: nil} = user) do
     attrs = %{

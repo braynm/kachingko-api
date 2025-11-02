@@ -104,13 +104,13 @@ defmodule KachingkoApi.Authentication do
       iex> Authentication.login("", "wrong_password")
       {:error, %Ecto.Changeset{invalid? true, ...}}
   """
-  @spec login(String.t(), String.t(), audience(), map()) :: auth_result()
-  def login(email, password, _audience \\ "web", deps \\ nil) do
+  @spec login(String.t(), String.t(), audience(), map(), map()) :: auth_result()
+  def login(email, password, _audience \\ "web", tracking_params \\ %{}, deps \\ nil) do
     deps = deps || default_deps()
 
     case LoginUser.new(%{email: email, password: password}) do
       {:ok, command} ->
-        LoginUserHandler.handle(command, deps)
+        LoginUserHandler.handle(command, tracking_params, deps)
 
       {:error, %Ecto.Changeset{} = error} ->
         {:error, error}

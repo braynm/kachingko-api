@@ -9,9 +9,9 @@ defmodule KachingkoApi.Authentication.Application.Handlers.LoginUserHandler do
           session_repository: SessionRepository.t()
         }
 
-  def handle(%LoginUser{} = command, deps) do
+  def handle(%LoginUser{} = command, tracking_params, deps) do
     with {:ok, user} <- AuthenticationService.authenticate(command.email, command.password, deps),
-         {:ok, session} <- AuthenticationService.create_session(user, deps) do
+         {:ok, session} <- AuthenticationService.create_session(user, tracking_params, deps) do
       Result.ok(%{
         user: AuthenticatedUser.new(user),
         # TODO: create session DTO

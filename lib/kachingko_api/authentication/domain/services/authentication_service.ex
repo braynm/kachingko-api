@@ -27,11 +27,12 @@ defmodule KachingkoApi.Authentication.Domain.Services.AuthenticationService do
     end
   end
 
-  def create_session(%User{} = user, audience \\ "web", deps) do
+  def create_session(%User{} = user, audience \\ "web", login_tracking_params, deps) do
     session_attrs = %{user_id: user.id, aud: audience}
 
     with {:ok, session} <- create_session_entity(session_attrs, audience),
-         {:ok, {saved_session, token}} <- deps.session_repository.create_token(session) do
+         {:ok, {saved_session, token}} <-
+           deps.session_repository.create_token(session, login_tracking_params) do
       Result.ok({saved_session, token})
     else
       error -> error

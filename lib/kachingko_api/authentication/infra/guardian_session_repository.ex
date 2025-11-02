@@ -9,14 +9,15 @@ defmodule KachingkoApi.Authentication.Infra.GuardianSessionRepository do
 
   import Ecto.Query
 
-  def create_token(%Session{} = session) do
+  def create_token(%Session{} = session, login_tracking_params \\ %{}) do
     with {:ok, user} <- EctoUserRepository.get_by_id(session.user_id),
          {:ok, token, claims} <-
            GuardianWeb.encode_and_sign(
              user,
              %{},
              audience: session.aud,
-             jti: session.jti
+             jti: session.jti,
+             login_tracking: login_tracking_params
            ),
          updated_session <- update_session_from_claims(session, claims) do
       Result.ok({updated_session, token})

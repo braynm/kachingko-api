@@ -34,7 +34,7 @@ defmodule KachingkoApiWeb.StatementsController do
 
   def month_summay_spent(conn, params) do
     user = Guardian.Plug.current_resource(conn)
-    Process.sleep(Enum.random(500..5000))
+    # Process.sleep(Enum.random(500..5000))
 
     case Statements.month_summary_spent(user.id, params["start_date"], params["end_date"]) do
       {:ok, summary} ->
@@ -90,7 +90,7 @@ defmodule KachingkoApiWeb.StatementsController do
     user = Guardian.Plug.current_resource(conn)
     params = Map.put(params, "user_id", user.id)
 
-    Process.sleep(Enum.random(1000..2500))
+    # Process.sleep(Enum.random(1000..2500))
 
     case Statements.upload_and_save_transactions_from_attachment(params) do
       {:ok, data} ->

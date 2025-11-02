@@ -86,11 +86,12 @@ config :swoosh, :api_client, false
 
 config :kachingko_api,
   # 30 minuets
-  web_token_ttl: 250 * 60
+  web_token_ttl: 30 * 60
 
 config :kachingko_api, KachingkoApiWeb.Guardian,
-  issuer: "cc_spending_api",
-  secret_key: System.get_env("GUARDIAN_SECRET_KEY")
+  issuer: "kachingko_api",
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY"),
+  ttl: {30, :minutes}
 
 config :guardian, Guardian.DB,
   # Add your repository module
