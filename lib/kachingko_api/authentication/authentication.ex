@@ -9,6 +9,7 @@ defmodule KachingkoApi.Authentication do
 
   alias KachingkoApi.Authentication.Domain.Entities.{User, Session}
   alias KachingkoApi.Shared.Result
+  alias KachingkoApi.Authentication.Domain.Services.AuthenticationService
 
   alias KachingkoApi.Authentication.Application.Commands.{
     RegisterUser,
@@ -118,6 +119,18 @@ defmodule KachingkoApi.Authentication do
       error ->
         error
     end
+  end
+
+  @spec verify_2fa_token(map(), map()) :: term()
+  def verify_2fa_token(params, deps \\ nil) do
+    deps = deps || default_deps()
+
+    AuthenticationService.verify_2fa_token(
+      params["pending_token"],
+      params["code"],
+      params["device"],
+      deps
+    )
   end
 
   @doc """

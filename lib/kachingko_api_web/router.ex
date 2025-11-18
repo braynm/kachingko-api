@@ -32,11 +32,16 @@ defmodule KachingkoApiWeb.Router do
     plug KachingkoApiWeb.Plugs.ValidateGuardianSession
   end
 
+  pipeline :ensure_2fa_completed do
+    plug KachingkoApiWeb.Plugs.Ensure2FACompleted
+  end
+
   scope "/api", KachingkoApiWeb do
     pipe_through :api
 
     post "/auth/register", AuthController, :register
     post "/auth/login", AuthController, :login
+    post "/auth/verify-2fa", AuthController, :verify_2fa
   end
 
   scope "/api", KachingkoApiWeb do
@@ -46,10 +51,14 @@ defmodule KachingkoApiWeb.Router do
   end
 
   scope "/api", KachingkoApiWeb do
-    pipe_through [:api, :guardian_auth, :guardian_validate_session]
+    pipe_through [:api, :guardian_auth, :ensure_2fa_completed, :guardian_validate_session]
+    # pipe_through [:api, :guardian_auth, :guardian_validate_session]
 
     get "/auth/test", AuthController, :test
     get "/auth/logout", AuthController, :logout
+
+    post "/2fa/setup/initiate", TwoFactorController, :initiate
+    post "/2fa/setup/complete", TwoFactorController, :complete_setup
 
     get "/statements/cards", StatementsController, :get_cards
     post "/statements/new-card", StatementsController, :new_card

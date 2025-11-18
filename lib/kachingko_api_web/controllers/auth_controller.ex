@@ -3,6 +3,7 @@ defmodule KachingkoApiWeb.AuthController do
 
   alias KachingkoApi.Authentication
   alias KachingkoApiWeb.Guardian
+  alias KachingkoApi.Authentication.Domain.Services.AuthenticationService
 
   def register(conn, params) do
     audience = Map.get(params, "audience", "web")
@@ -43,15 +44,16 @@ defmodule KachingkoApiWeb.AuthController do
 
     # case Authentication.login(auth_params, guardian_opts) do
     case Authentication.login(params["email"], params["password"], "web", tracking_params) do
-      {:ok, %{user: user, session: {_, token}}} ->
-        user =
-          user
-          |> Map.from_struct()
-          |> IO.inspect()
+      {:ok, %{user: user, session: {session, token}}} ->
+        two_factor_required = Map.get(session, "2fa_required", false)
+        user = Map.from_struct(user)
 
         conn
         |> put_status(:created)
-        |> json(%{success: true, data: %{user: user, token: token}})
+        |> json(%{
+          success: true,
+          data: %{user: user, token: token, two_factor_required: two_factor_required}
+        })
 
       {:error, error} ->
         IO.inspect(error)
@@ -77,6 +79,38 @@ defmodule KachingkoApiWeb.AuthController do
             end
         })
     end
+  end
+
+  def verify_2fa(conn, params) do
+    Authentication.verify_2fa_token(params) |> IO.inspect(label: "@@@@@@@@@@@@")
+
+    case Authentication.verify_2fa_token(params) do
+      {:ok, resp} ->
+        json(conn, %{
+          success: true,
+          token: Map.get(resp, :token),
+          user: Map.get(resp, :user) |> Map.from_struct()
+        })
+
+      {:error, :token_expired} ->
+        conn
+        |> put_status(401)
+        |> json(%{success: false, error: "Token expired"})
+
+      {:error, :invalid_code} ->
+        conn
+        |> put_status(400)
+        |> json(%{success: false, error: "Invalid verification code"})
+
+      _ ->
+        conn
+        |> put_status(400)
+        |> json(%{success: false, error: "Something went wrong. Please try again later."})
+    end
+
+    json(conn, %{
+      success: true
+    })
   end
 
   def logout(conn, _params) do

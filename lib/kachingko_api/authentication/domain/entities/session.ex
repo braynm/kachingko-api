@@ -2,31 +2,31 @@ defmodule KachingkoApi.Authentication.Domain.Entities.Session do
   alias KachingkoApi.Shared.Result
 
   @type t :: %__MODULE__{
-          # id: String.t() | nil,
           user_id: String.t(),
           jti: String.t(),
-          aud: String.t()
+          aud: String.t(),
+          typ: String.t()
         }
 
-  defstruct [:user_id, :jti, :aud, :expires_at, :created_at, :updated_at]
+  defstruct [:user_id, :jti, :typ, :aud, :expires_at]
 
   # 7 days
   @default_expiry_hours 24 * 7
   @default_audience "web"
 
   def new(attrs) do
-    expires_at = attrs[:expires_at] || default_expiry()
+    # expires_at = attrs[:expires_at] || default_expiry()
+    expires_at = attrs[:expires_at]
     jti = attrs[:jti] || generate_jti()
+    typ = attrs[:typ]
     aud = attrs[:aud] || @default_audience
 
     session = %__MODULE__{
-      # id: attrs[:id],
       user_id: attrs[:user_id],
       jti: jti,
       aud: aud,
-      expires_at: expires_at,
-      created_at: attrs[:created_at],
-      updated_at: attrs[:updated_at]
+      typ: typ,
+      expires_at: expires_at
     }
 
     Result.ok(session)
@@ -49,9 +49,9 @@ defmodule KachingkoApi.Authentication.Domain.Entities.Session do
     new(Map.put(attrs, :aud, "web"))
   end
 
-  defp default_expiry do
-    DateTime.add(DateTime.utc_now(), @default_expiry_hours * 3600, :second)
-  end
+  # defp default_expiry do
+  #   DateTime.add(DateTime.utc_now(), @default_expiry_hours * 3600, :second)
+  # end
 
   defp generate_jti do
     :crypto.strong_rand_bytes(16) |> Base.url_encode64(padding: false)

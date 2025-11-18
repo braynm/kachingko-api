@@ -41,7 +41,7 @@ defmodule KachingkoApiWeb.Plugs.ValidateGuardianSession do
     extract_from_authorization(conn)
   end
 
-  defp extract_from_authorization(conn) do
+  def extract_from_authorization(conn) do
     case get_req_header(conn, "authorization") do
       ["Bearer " <> token] -> String.trim(token)
       # Case insensitive

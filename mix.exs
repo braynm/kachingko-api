@@ -76,7 +76,8 @@ defmodule KachingkoApi.MixProject do
       {:decimal, "~> 2.0"},
       {:tzdata, "~> 1.1"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:nimble_totp, "~> 1.0"}
     ]
   end
 

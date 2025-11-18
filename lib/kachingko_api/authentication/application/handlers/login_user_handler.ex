@@ -21,4 +21,16 @@ defmodule KachingkoApi.Authentication.Application.Handlers.LoginUserHandler do
       error -> error
     end
   end
+
+  # def handle(%LoginUser{} = command, tracking_params, deps) do
+  #   with {:ok, user} <- AuthenticationService.authenticate(command.email, command.password, deps),
+  #        {:ok, session} <- AuthenticationService.create_session(user, tracking_params, deps) do
+  #     Result.ok(%{
+  #       user: AuthenticatedUser.new(user),
+  #       # TODO: create session DTO
+  #       session: session
+  #     })
+  #   else
+  #     error -> error
+  #   end
 end

@@ -2,12 +2,41 @@ defmodule KachingkoApi.Authentication.Infra.GuardianSessionRepository do
   @behaviour KachingkoApi.Authentication.Domain.Repositories.SessionRepository
 
   alias KachingkoApi.Authentication.Domain.Entities.Session
+  alias KachingkoApi.Authentication.Domain.Entities.User
   alias KachingkoApi.Authentication.Infra.EctoUserRepository
   alias KachingkoApiWeb.Guardian, as: GuardianWeb
   alias KachingkoApi.Shared.{Result, Errors}
   alias KachingkoApi.Repo
 
   import Ecto.Query
+
+  def create_2fa_pending_token(%User{} = user, login_tracking_params \\ %{}) do
+    GuardianWeb.encode_and_sign_2fa_pending(user, login_tracking: login_tracking_params)
+  end
+
+  def verify_pending_token(pending_token) do
+    with {:ok, claims} <- GuardianWeb.decode_and_verify(pending_token),
+         {:ok, user} <- GuardianWeb.resource_from_claims(claims),
+         :ok <- GuardianWeb.verify_2fa_pending_token(claims) do
+      {:ok, user.id}
+    else
+      error -> error
+    end
+  end
+
+  def create_token_from_user(%Session{} = session, %User{} = user, login_tracking_params \\ %{}) do
+    {:ok, token, claims} =
+      GuardianWeb.encode_and_sign(
+        user,
+        %{},
+        audience: session.aud,
+        jti: session.jti,
+        login_tracking: login_tracking_params
+      )
+
+    updated_session = update_session_from_claims(session, claims)
+    Result.ok({updated_session, token})
+  end
 
   def create_token(%Session{} = session, login_tracking_params \\ %{}) do
     with {:ok, user} <- EctoUserRepository.get_by_id(session.user_id),

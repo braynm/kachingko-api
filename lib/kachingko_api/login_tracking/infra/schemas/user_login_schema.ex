@@ -26,7 +26,7 @@ defmodule KachingkoApi.LoginTracking.Infra.Schemas.UserLoginschema do
       token_expires_at: attrs.token_expires_at,
       device_fingerprint: attrs.fingerprint,
       session_id: attrs.session_id,
-      signed_out_at: attrs.signed_out_at,
+      signed_out_at: attrs.signed_out_at
     }
 
     %__MODULE__{}
@@ -51,4 +51,3 @@ defmodule KachingkoApi.LoginTracking.Infra.Schemas.UserLoginschema do
     ])
   end
 end
-

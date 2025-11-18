@@ -4,6 +4,7 @@ defmodule KachingkoApiWeb.Guardian do
   alias KachingkoApi.LoginTracking
   alias KachingkoApi.Authentication.Infra.EctoUserRepository
   alias KachingkoApi.Authentication.Domain.Dtos.AuthenticatedUser
+  alias KachingkoApi.Authentication.Domain.Services.TwoFactorService
 
   def subject_for_token(%{id: id}, _claims) do
     {:ok, to_string(id)}
@@ -49,6 +50,53 @@ defmodule KachingkoApiWeb.Guardian do
       {:ok, token}
     end
   end
+
+  @doc """
+  Creates a 2FA pending token with limited permissions.
+  Expires in 5 minutes.
+  """
+  def encode_and_sign_2fa_pending(user, options \\ []) do
+    claims = %{
+      "typ" => "2fa_pending",
+      "2fa_required" => true
+    }
+
+    # Short expiry for 2FA pending tokens
+    token_options = Keyword.merge(options, ttl: {5, :minutes})
+
+    encode_and_sign(user, claims, token_options)
+  end
+
+  @doc """
+  Exchanges a 2FA pending token for a full access token after verification.
+  """
+  def exchange_2fa_token(pending_token, two_factor_code, login_tracking_params) do
+    with {:ok, claims} <- decode_and_verify(pending_token),
+         {:ok, user} <- resource_from_claims(claims),
+         :ok <- verify_2fa_pending_token(claims),
+         {:ok, _} <- TwoFactorService.verify_code(user, two_factor_code) do
+      # Create full access token
+      # GuardianWeb.encode_and_sign(
+      #   user,
+      #   %{},
+      #   audience: claims.aud,
+      #   jti: claims.jti,
+      #   login_tracking: login_tracking_params
+      # )
+
+      encode_and_sign(
+        user,
+        %{"typ" => "ss"},
+        login_tracking: LoginTracking.track_login(login_tracking_params, claims)
+      )
+    else
+      {:error, :invalid_code} -> {:error, :invalid_2fa_code}
+      error -> error
+    end
+  end
+
+  def verify_2fa_pending_token(%{"typ" => "2fa_pending"}), do: :ok
+  def verify_2fa_pending_token(_), do: {:error, :not_2fa_pending_token}
 
   def on_verify(claims, token, _options) do
     with {:ok, _} <- Guardian.DB.on_verify(claims, token) do
